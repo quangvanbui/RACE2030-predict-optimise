@@ -1,6 +1,6 @@
 # main.R
 library(tidyverse)
-library(arrow)
+# library(arrow)
 library(here)
 library(tsibble)
 library(data.table)
@@ -42,6 +42,14 @@ periods_per_day <- 288
 power_metric <- "pv_power"
 start <- "2021-07-01 00:00:00"
 end <- "2022-08-17 22:00:00"
+
+# Check if the directory exists, and create it if it doesn't
+if (!file.exists(here(paste0("results/", power_metric)))) {
+  dir.create(here(paste0("results/", power_metric)), recursive = TRUE)
+}
+if (!file.exists(here(paste0("models/", power_metric)))) {
+  dir.create(here(paste0("models/", power_metric)), recursive = TRUE)
+}
 
 # Load and clean power data
 power_data_path <- here("processed_data/power", paste0(if (sample_data) "sample_", paste0(power_metric, "_data.rds")))
@@ -103,7 +111,7 @@ for (i in direct_model_steps) {
   # Prepare data
   modelling_data <- rearrange_columns(power_data, i, power_metric, periods_per_day)
   modelling_data <- create_differences_means(modelling_data, i)
-  modelling_data <- rolling_stats(modelling_data, power_metric, i)
+  modelling_data <- adjust_time_variables(modelling_data, power_metric, i)
   split_data_result <- prepare_and_split_data(modelling_data, power_metric)
   training_data <- split_data_result$training_data
   test_data <- split_data_result$test_data
@@ -115,8 +123,8 @@ for (i in direct_model_steps) {
   # Train
   training_data_mat <- convert_to_matrix(training_data)
   test_data_mat <- convert_to_matrix(test_data)
-  model <- train_lightgbm(training_data_mat, training_data_output, test_data_mat, test_data_output, params, nrounds, early_stopping_rounds)
+  model <- train_lightgbm(training_data_mat, training_data_output, test_data_mat, test_data_output, params, nrounds, early_stopping_rounds, power_metric)
   
   # Predict
-  test_data_fcast <- generate_forecast_and_save(model, test_data_mat, test_data)
+  test_data_fcast <- generate_forecast_and_save(model, test_data_mat, test_data, power_metric)
 }

@@ -129,18 +129,13 @@ create_differences_means <- function(data, i) {
   return(data)
 }
 
-# Function for feature engineering
-rolling_stats <- function(data, power_metric, i) {
-  data <- as.data.table(data)
-  
+# Adjust time variables
+adjust_time_variables <- function(data, power_metric, i) {
   if (power_metric == "load_power") {
+    setDT(data)
     data[, clockdatetime_weekday := clockdatetime_dow - 5]
     data[, `:=` (clockdatetime_weekday_ind = ifelse(clockdatetime_weekday <= 0, 0, clockdatetime_weekday))]
-    period_var <- "clockdatetime_period"
-    by_vars <- c("unit", "clockdatetime_weekday_ind", period_var)
-  } else {
-    period_var <- "utc_period"
-    by_vars <- c("unit", period_var)
+    data <- data %>% as_tibble()
   }
   
   return(data)

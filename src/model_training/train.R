@@ -33,7 +33,7 @@ convert_to_matrix <- function(data) {
 }
 
 # Function to train LightGBM model
-train_lightgbm <- function(training_data_mat, training_data_output, test_data_mat, test_data_output, params, nrounds, early_stopping_rounds) {
+train_lightgbm <- function(training_data_mat, training_data_output, test_data_mat, test_data_output, params, nrounds, early_stopping_rounds, power_metric) {
   dtrain <- lgb.Dataset(
     data = training_data_mat
     , label = training_data_output
@@ -52,7 +52,10 @@ train_lightgbm <- function(training_data_mat, training_data_output, test_data_ma
     , early_stopping_rounds = early_stopping_rounds
   )
   
-  lgb.save(model, filename = here("models", paste0("direct_model_", i, ".txt")))  
+  
+  filename <- paste0("direct_model_", i, ".txt")
+  path <- here("models", power_metric, filename)
+  lgb.save(model, filename = path)
   
   return(model)
 }
