@@ -14,6 +14,19 @@ source(here("src/model_training", "prepare_modelling_data.R"))
 source(here("src/model_training", "train.R"))
 source(here("src/model_prediction", "predict.R"))
 
+periods_per_day <- 288 # Periods in day for 5-minute data
+power_metric <- "pv_power" # Power metric to model and forecast. Set to load_power for load.
+direct_model_steps <- seq(1, 300, 25) #~~~~~This is the selection of steps to model an #d forecast~~~~#
+                                      #~~~~~To model all steps for a 2-day span, set direct_model_steps <- 1:576~~~~#
+
+min_available_data <- periods_per_day*30
+min_perc_missing_overall <- 20 # Percentage of missing value by unit threshold for unit removal
+test_days <- 30
+missing_data_threshold <- 0.2 # Proportion of missing value in test-set by unit threshold for unit removal (set to 0 if this is not important)
+end <- "2022-08-17 22:00:00" # Date-time cutoff when loading data
+threshold_load_power <- 0.1 # Proportion exact zero-value threshold for unit removal
+threshold_pv_power <- 0.6 # Proportion exact zero-value threshold for unit removal
+
 sample_data <- TRUE
 input_dir <- here("data/power")
 output_dir <- here("processed_data/power")
@@ -38,11 +51,6 @@ if (!file.exists(power_file_path)) {
 #````````````````````````````````````````````````````````````````````````````#
 #````````````````````````````````````````````````````````````````````````````#
 
-periods_per_day <- 288
-power_metric <- "pv_power"
-start <- "2021-07-01 00:00:00"
-end <- "2022-08-17 22:00:00"
-
 # Check if the directory exists, and create it if it doesn't
 if (!file.exists(here(paste0("results/", power_metric)))) {
   dir.create(here(paste0("results/", power_metric)), recursive = TRUE)
@@ -56,17 +64,10 @@ power_data_path <- here("processed_data/power", paste0(if (sample_data) "sample_
 power_data <- load_data(power_data_path, end)
 power_data <- remove_units_with_more_than_1perc_negative(power_data)
 power_data <- replace_negative_values_with_NA(power_data)
-
-min_available_data <- periods_per_day*30
-min_perc_missing_overall <- 20
-test_days <- 30
-missing_data_threshold <- 0.2
 power_data <- filter_units_based_on_missing_data(power_data, min_available_data, min_perc_missing_overall)
 power_data <- remove_units_with_high_missing_data_in_test_set(power_data, end, test_days, missing_data_threshold)
 power_data <- replace_zero_day_with_NA(power_data, power_metric)
 
-threshold_load_power <- 0.1
-threshold_pv_power <- 0.6
 if (power_metric == "load_power") {
   power_data <- remove_units_exceeding_zero_threshold(power_data, power_metric, threshold_load_power)
 } else if (power_metric == "pv_power") {
@@ -93,8 +94,6 @@ power_features <- suppressWarnings(compute_statistics_features(power_metric, pow
 power_data <- remove_units_with_excessive_NAs(power_data, power_metric, power_features$units_many_consecutive_NAs1, power_features$units_many_consecutive_NAs2)
 
 # Model training and prediction
-direct_model_steps <- seq(1, 300, 25) #~~~~~This is the selection of steps to model and forecast~~~~#
-#~~~~~To model all steps for a 2-day span, set direct_model_steps <- 1:576~~~~#
 metric_lags <- get_metric_lags(power_metric, direct_model_steps, periods_per_day)
 power_data <- create_lags_of_output_variable(power_data, metric_lags)
 power_data <- join_features(power_data, power_metric, feat_unit_dat = power_features$feat_unit_dat, feat_unit_month_period_dat = power_features$feat_unit_month_period_dat, feat_unit_month_dow_dat = power_features$feat_unit_month_dow_dat)
