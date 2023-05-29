@@ -14,8 +14,22 @@ source(here("src/model_training", "prepare_modelling_data.R"))
 source(here("src/model_training", "train.R"))
 source(here("src/model_prediction", "predict.R"))
 
+# Read the provided command-line arguments.
+args = commandArgs(trailingOnly=TRUE)
+
+# Read power metric to model and forecast from command-line.
+# Options are 'pv_power' (default) and 'load_power'.
+if (length(args) > 0) {
+  power_metric <- args[1]
+} else {
+  power_metric <- "pv_power"
+}
+
+if (!((power_metric == "pv_power") | (power_metric == "load_power"))) {
+  stop(paste("Unknown power metric '", power_metric, "'.", sep=""), call.=FALSE)
+}
+
 periods_per_day <- 288 # Periods in day for 5-minute data
-power_metric <- "pv_power" # Power metric to model and forecast. Set to load_power for load.
 direct_model_steps <- seq(1, 300, 25) #~~~~~This is the selection of steps to model an #d forecast~~~~#
                                       #~~~~~To model all steps for a 2-day span, set direct_model_steps <- 1:576~~~~#
 

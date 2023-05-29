@@ -1,0 +1,12 @@
+# R project files.
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Binary files.
+*.rds
+*.zip
+
+# LightGBM output models.
+models/**/*.txt
