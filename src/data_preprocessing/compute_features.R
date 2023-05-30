@@ -17,8 +17,7 @@ compute_datetime_features <- function(data, timezone = "UTC") {
       tz_period = as.numeric(tz_hour_minute)/5,
       .before = 4
     ) %>%
-    select(-c(# tz_hour, 
-      tz_minute, tz_minute_char, tz_hour_minute))
+    select(-c(tz_minute, tz_minute_char, tz_hour_minute))
   
   return(data)
 }

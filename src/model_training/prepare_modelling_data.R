@@ -19,35 +19,25 @@ create_lags_of_output_variable <- function(data, metric_lags) {
 }
 
 # Function to create date time columns
-add_columns_based_on_metric <- function(data, power_metric) {
-  if (power_metric == "pv_power") {
-    data <- data %>%
-      mutate(utc_hour = hour(utc), .before = 4)
-  }
-  
+compute_daylight_savings_flag <- function(data, power_metric) {
   if (power_metric == "load_power") {
     acdt_acst_2020 <- ymd_hms("2020-04-05 03:00:00")
     acst_acdt_2020 <- ymd_hms("2020-10-04 02:00:00")
     acdt_acst_2021 <- ymd_hms("2021-04-04 03:00:00")
     acst_acdt_2021 <- ymd_hms("2021-10-03 02:00:00")
-    acdt_acst_2022 <- ymd_hms("2022-04-02 03:00:00")
-    acst_acdt_2022 <- ymd_hms("2022-10-01 02:00:00")
+    acdt_acst_2022 <- ymd_hms("2022-04-03 03:00:00")
+    acst_acdt_2022 <- ymd_hms("2022-10-02 02:00:00")
+    acdt_acst_2023 <- ymd_hms("2023-04-02 03:00:00")
+    acst_acdt_2023 <- ymd_hms("2023-10-01 02:00:00")
+    acdt_acst_2024 <- ymd_hms("2024-04-07 03:00:00")
+    acst_acdt_2024 <- ymd_hms("2024-10-06 02:00:00")
     
     data <- data %>%
       mutate(utc_date = date(utc),
              acst = utc + hours(9) + minutes(30),
              acdt = utc + hours(10) + minutes(30),
-             acst_flag = if_else((acdt >= acdt_acst_2020 & acdt <= acst_acdt_2020) | (acdt >= acdt_acst_2021 & acdt <= acst_acdt_2021) | (acdt >= acdt_acst_2022 & acdt <= acst_acdt_2022), 1, 0),
-             acdt_flag = if_else(acst_flag != 1, 1, 0),
-             clockdatetime = if_else(acst_flag == 1, acst, acdt),
-             clockdatetime_dow = lubridate::wday(clockdatetime, week_start = 1),
-             clockdatetime_month = lubridate::month(clockdatetime),
-             clockdatetime_hour = lubridate::hour(clockdatetime),
-             clockdatetime_minute = lubridate::minute(clockdatetime),
-             clockdatetime_minute_char = if_else(clockdatetime_minute < 10, paste0(0, clockdatetime_minute), as.character(clockdatetime_minute)),
-             clockdatetime_hour_minute = paste0(clockdatetime_hour, clockdatetime_minute_char),
-             clockdatetime_period = as.numeric(clockdatetime_hour_minute)/5) %>% 
-      select(-c(acst, acdt, acdt_flag, clockdatetime, clockdatetime_hour, clockdatetime_minute, clockdatetime_minute_char, clockdatetime_hour_minute))
+             acst_flag = if_else((acdt >= acdt_acst_2020 & acdt <= acst_acdt_2020) | (acdt >= acdt_acst_2021 & acdt <= acst_acdt_2021) | (acdt >= acdt_acst_2022 & acdt <= acst_acdt_2022), 1, 0)) %>% 
+      select(-acst, -acdt)
   }
   
   return(data)
