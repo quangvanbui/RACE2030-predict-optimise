@@ -1,6 +1,5 @@
 # main.R
 library(tidyverse)
-# library(arrow)
 library(here)
 library(tsibble)
 library(data.table)
@@ -14,14 +13,28 @@ source(here("src/model_training", "prepare_modelling_data.R"))
 source(here("src/model_training", "train.R"))
 source(here("src/model_prediction", "predict.R"))
 
+# Read the provided command-line arguments.
+args = commandArgs(trailingOnly=TRUE)
+
+# Read power metric to model and forecast from command-line.
+# Options are 'pv_power' (default) and 'load_power'.
+if (length(args) > 0) {
+  power_metric <- args[1]
+} else {
+  power_metric <- "pv_power"
+}
+
+if (!((power_metric == "pv_power") | (power_metric == "load_power"))) {
+  stop(paste("Unknown power metric '", power_metric, "'.", sep=""), call.=FALSE)
+}
+
 periods_per_day <- 288 # Periods in day for 5-minute data
-power_metric <- "pv_power" # Power metric to model and forecast. Set to load_power for load.
 direct_model_steps <- seq(1, 300, 25) #~~~~~This is the selection of steps to model an #d forecast~~~~#
                                       #~~~~~To model all steps for a 2-day span, set direct_model_steps <- 1:576~~~~#
 
 min_available_data <- periods_per_day*30
 min_perc_missing_overall <- 20 # Percentage of missing value by unit threshold for unit removal
-test_days <- 30
+test_days <- 30 # Days in test set
 missing_data_threshold <- 0.2 # Proportion of missing value in test-set by unit threshold for unit removal (set to 0 if this is not important)
 end <- "2022-08-17 22:00:00" # Date-time cutoff when loading data
 threshold_load_power <- 0.1 # Proportion exact zero-value threshold for unit removal
@@ -97,6 +110,7 @@ power_data <- remove_units_with_excessive_NAs(power_data, power_metric, power_fe
 metric_lags <- get_metric_lags(power_metric, direct_model_steps, periods_per_day)
 power_data <- create_lags_of_output_variable(power_data, metric_lags)
 power_data <- join_features(power_data, power_metric, feat_unit_dat = power_features$feat_unit_dat, feat_unit_month_period_dat = power_features$feat_unit_month_period_dat, feat_unit_month_dow_dat = power_features$feat_unit_month_dow_dat)
+power_data <- compute_daylight_savings_flag(power_data, power_metric)
 
 nrounds <- 1000
 early_stopping_rounds <- 20
