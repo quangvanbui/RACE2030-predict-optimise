@@ -32,13 +32,24 @@ periods_per_day <- 288 # Periods in day for 5-minute data
 direct_model_steps <- seq(1, 300, 25) #~~~~~This is the selection of steps to model an #d forecast~~~~#
                                       #~~~~~To model all steps for a 2-day span, set direct_model_steps <- 1:576~~~~#
 
+train_model <- TRUE # Flag to decide whether to train or just forecast
 min_available_data <- periods_per_day*30
 min_perc_missing_overall <- 20 # Percentage of missing value by unit threshold for unit removal
 test_days <- 30 # Days in test set
 missing_data_threshold <- 0.2 # Proportion of missing value in test-set by unit threshold for unit removal (set to 0 if this is not important)
 end <- "2022-08-17 22:00:00" # Date-time cutoff when loading data
+train_end_date <- "2022-07-18" # Date-time of last training data
 threshold_load_power <- 0.1 # Proportion exact zero-value threshold for unit removal
 threshold_pv_power <- 0.6 # Proportion exact zero-value threshold for unit removal
+
+# LightGBM parameters
+nrounds <- 1000
+early_stopping_rounds <- 20
+params <- list(
+  objective = "huber"
+  , metric = "l1"
+  , learning_rate = 0.03
+)
 
 sample_data <- TRUE
 input_dir <- here("data/power")
@@ -102,7 +113,7 @@ if (power_metric == "load_power") {
            utc_hour = tz_hour,
            utc_period = tz_period)
 }
-train_end_date <- "2022-07-18"
+
 power_features <- suppressWarnings(compute_statistics_features(power_metric, power_data, train_end_date))
 power_data <- remove_units_with_excessive_NAs(power_data, power_metric, power_features$units_many_consecutive_NAs1, power_features$units_many_consecutive_NAs2)
 
@@ -111,14 +122,6 @@ metric_lags <- get_metric_lags(power_metric, direct_model_steps, periods_per_day
 power_data <- create_lags_of_output_variable(power_data, metric_lags)
 power_data <- join_features(power_data, power_metric, feat_unit_dat = power_features$feat_unit_dat, feat_unit_month_period_dat = power_features$feat_unit_month_period_dat, feat_unit_month_dow_dat = power_features$feat_unit_month_dow_dat)
 power_data <- compute_daylight_savings_flag(power_data, power_metric)
-
-nrounds <- 1000
-early_stopping_rounds <- 20
-params <- list(
-  objective = "huber"
-  , metric = "l1"
-  , learning_rate = 0.03
-)
 
 for (i in direct_model_steps) {
   # Prepare data
@@ -130,13 +133,23 @@ for (i in direct_model_steps) {
   test_data <- split_data_result$test_data
   training_data_output <- training_data$max
   test_data_output <- test_data$max
+  test_data_mat <- convert_to_matrix(test_data)
   
   gc()
   
   # Train
-  training_data_mat <- convert_to_matrix(training_data)
-  test_data_mat <- convert_to_matrix(test_data)
-  model <- train_lightgbm(training_data_mat, training_data_output, test_data_mat, test_data_output, params, nrounds, early_stopping_rounds, power_metric)
+  if (train_model) {
+    training_data_mat <- convert_to_matrix(training_data)
+    model <- train_lightgbm(training_data_mat, training_data_output, test_data_mat, test_data_output, params, nrounds, early_stopping_rounds, power_metric)
+  } else {
+    # Make sure the model file exists
+    filename <- paste0("direct_model_", i, ".txt")
+    path <- here("models", power_metric, filename)
+    if (!file.exists(path)) {
+      stop("Model file does not exist.")
+    }
+    model <- lgb.load(path)
+  }
   
   # Predict
   test_data_fcast <- generate_forecast_and_save(model, test_data_mat, test_data, power_metric)
