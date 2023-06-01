@@ -10,3 +10,17 @@
 
 # LightGBM output models.
 models/**/*.txt
+
+# Compiled Python code.
+*.pyc
+
+# MiniZinc input data, output json, log-files.
+*.dzn
+*.json
+*.log
+
+# The (default location for) Python virtual env.
+.venv/
+
+# Notebook checkpoints.
+.ipynb_checkpoints/
