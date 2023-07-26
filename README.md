@@ -1,6 +1,6 @@
 # RACE2030 Predict and Optimise
 
-This repository includes code for processing and cleaning residential power data, training power models with machine learning, forecasting power, and optimising battery schedules. The forecasting code is in R, while the optimisation code is in Python. Details about the data can be found [here](https://github.com/quangvanbui/RACE2030-predict-optimise/tree/main/processed_data/public_data.md).
+This repository includes code for processing and cleaning residential power data, training power models with machine learning, forecasting power, and optimising battery schedules. The forecasting code is in R, while the optimisation code is in Python. Details about the raw data can be found [here](https://github.com/quangvanbui/RACE2030-predict-optimise/tree/main/processed_data/public_data.md).
 
 ## Table of Contents
 
