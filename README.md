@@ -1,6 +1,6 @@
 # RACE2030 Predict and Optimise
 
-This repository contains code for processing the residential power data, cleaning the data, training power models, and forecasting power using machine learning techniques. The code is written in R.
+This repository includes code for processing and cleaning residential power data, training power models with machine learning, forecasting power, and optimising battery schedules. The forecasting code is in R, while the optimisation code is in Python.
 
 ## Table of Contents
 
@@ -10,6 +10,7 @@ This repository contains code for processing the residential power data, cleanin
 - [Data Processing and Cleaning](#data-processing-and-cleaning)
 - [Training Models](#training-models)
 - [Forecasting](#forecasting)
+- [Optimisation](#optimisation)
 - [Usage](#usage)
 
 ## Getting Started
@@ -18,16 +19,19 @@ These instructions will help you set up the project on your local machine for de
 
 1. Clone the repository
 
-```bash
+```
 git clone https://github.com/quangvanbui/switchdin-predict-optimise.git
 ```
 
 2. Install dependencies
-Download and install [R](https://cran.rstudio.com/) and [RStudio](https://posit.co/download/rstudio-desktop/). Then, use RStudio to install the necessary packages by running the following commands:
 
-```r
-install.packages(c("tidyverse", "arrow", "here", "tsibble", "data.table", "lightgbm", "caTools"))
+- Forecasting: Download and install [R](https://cran.rstudio.com/) and [RStudio](https://posit.co/download/rstudio-desktop/). Then, use RStudio to install the necessary packages by running the following commands:
+
 ```
+install.packages(c("tidyverse", "arrow", "here", "data.table", "lightgbm", "caTools"))
+```
+
+- Optimisation: [TODO]
 
 ## Data Processing and Cleaning
 
@@ -67,6 +71,10 @@ The output of our forecasting models are stored in data files that contain five 
 
 This output data provides a comprehensive and chronological record of the model's forecast values, the actual values, and when each forecast was generated. It can be used for further analysis, model evaluation, visualisation, or reporting.
 
+## Optimisation
+
+[TODO]
+
 ## Usage
 
 Follow these steps to set up and use the project:
@@ -75,10 +83,12 @@ Follow these steps to set up and use the project:
 
 1. Install R and RStudio. Download and install the latest versions of each.
 2. Install the required R packages: tidyverse, arrow, here, tsibble, data.table, lightgbm, and caTools.
+3. [TODO]
 
-### Running the Project
+### Running the project
 
-1. To run the project, execute the `main.R` script located in the `src/` folder. This script sources the necessary functions from the other R scripts and performs the entire workflow, from data preprocessing and cleaning to model training and prediction.
+1. To run the forecasting component, execute the `main.R` script located in the `src/` folder. This script sources the necessary functions from the other R scripts and performs the entire workflow, from data preprocessing and cleaning to model training and prediction.
+2. To run the optimisation component, [TODO]
 
 ### Input Data
 
