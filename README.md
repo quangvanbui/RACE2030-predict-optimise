@@ -73,7 +73,7 @@ This output data provides a comprehensive and chronological record of the model'
 
 ## Optimisation
 
-[TODO]
+The code to optimise a battery schedule for the calculated forecasts is in [RACE2030-Optimise GitHub repository](https://github.com/fdenijs/RACE2030-optimise/). 
 
 ## Usage
 
@@ -83,12 +83,12 @@ Follow these steps to set up and use the project:
 
 1. Install R and RStudio. Download and install the latest versions of each.
 2. Install the required R packages: tidyverse, arrow, here, tsibble, data.table, lightgbm, and caTools.
-3. [TODO]
+3. (For optimisation) Install Python and MiniZinc and follow the steps in the RACE2030-optimise repo to create a virtual environment.
 
 ### Running the project
 
 1. To run the forecasting component, execute the `main.R` script located in the `src/` folder. This script sources the necessary functions from the other R scripts and performs the entire workflow, from data preprocessing and cleaning to model training and prediction.
-2. To run the optimisation component, [TODO]
+2. To run the optimisation component, run `python src/demo.py` in RACE2030-optimise repo to compute a VPP battery schedule with the forecast signals
 
 ### Input Data
 
@@ -99,4 +99,3 @@ Follow these steps to set up and use the project:
 
 1. When running the project, the models and forecasts will be generated.
 2. The trained models are stored in the `models/` folder, while the forecasts are stored in the `results/` folder.
-3. The results from the optimisation can be found in [TODO].
